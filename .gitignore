@@ -1,0 +1,7 @@
+*.class
+*.iml
+*.pdf
+.idea/
+*.jpg
+~*.docx
+~*.tmp
