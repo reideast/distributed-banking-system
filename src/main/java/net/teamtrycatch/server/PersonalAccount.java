@@ -25,7 +25,7 @@ public class PersonalAccount implements Account {
         this.accountNum = accountNum;
         this.accountHolderName = accountHolderName;
         this.username = username;
-        this.saveHashedPassword(password);
+        this.generateHashedPassword(password);
         transactions = new ArrayList<>();
     }
 
@@ -56,7 +56,7 @@ public class PersonalAccount implements Account {
 
     @Override
     public void setPassword(String newPassword) {
-        this.saveHashedPassword(newPassword);
+        this.generateHashedPassword(newPassword);
     }
 
     @Override
@@ -81,35 +81,28 @@ public class PersonalAccount implements Account {
                Arrays.equals(this.passwordHashed, hashPasswordAndSalt(password));
     }
 
-    private void saveHashedPassword(String passwordPlaintext) {
-        // Generate a new salt, as shown in: https://www.baeldung.com/java-password-hashing
+    private void generateHashedPassword(String passwordPlaintext) {
+        // Generate a new salt and store it as a Byte array, as shown in: https://www.baeldung.com/java-password-hashing
         SecureRandom rnd = new SecureRandom();
-        this.passwordSalt = new byte[16];
+        this.passwordSalt = new byte[64];
         rnd.nextBytes(this.passwordSalt);
-        System.out.print("Salt=");
-        for (byte elem : this.passwordSalt) {
-            System.out.print(elem);
-        }
-        System.out.println();
 
-        // Hash salt + password plaintext
+        // Generate a cryptographic hash from salt + password plaintext
         this.passwordHashed = hashPasswordAndSalt(passwordPlaintext);
     }
 
     private byte[] hashPasswordAndSalt(String password) {
         try {
+            // Password hashing method is from: https://www.baeldung.com/java-password-hashing
+            // Specify the building blocks of th password: plaintext password+salt with 65536 iterations of the algorithm and key length 128
             KeySpec spec = new PBEKeySpec(password.toCharArray(), this.passwordSalt, 65536, 128);
+            // Utilise the PBKDF2 algorithm for hashing
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] hash = factory.generateSecret(spec).getEncoded();
-            System.out.print("Hashed PW=");
-            for (byte elem : hash) {
-                System.out.print(elem);
-            }
-            System.out.println();
-            return hash;
+            // Generate the cryptographic hash based on the spec
+            return factory.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e); // DEBUG: want to add these exceptions to the method signature? Is there a pattern I can use here to justify this?
+            // These exceptions mean that the password hashing will not work, and the entire program SHOULD crash, so convert these to an Unchecked exception
+            throw new RuntimeException(e);
         }
     }
 
