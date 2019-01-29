@@ -20,6 +20,18 @@ public class Bank implements BankInterface {
 
     public Bank() throws RemoteException {
         accounts = new ArrayList<>();
+
+        this.createMockAccounts(); // Note: This is for the simplified application only. A real app would use a database for these
+    }
+
+    private void createMockAccounts() {
+        PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
+        jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000)); // TODO: Actual date in the past
+        // TODO: This Date constructor is depreciated?
+        jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
+        jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
+        this.accounts.add(jack);
+        // TODO: Continue here!
     }
 
     // TODO: What do I do with the "throws RemoteException". Nothing I'm doing will throw that...
@@ -72,10 +84,7 @@ public class Bank implements BankInterface {
 
         try {
             // Create bank instance (this class)
-            Bank bank = new Bank(); // DEBUG: Does this need to be the public, over-the-wire interface?
-//            BankInterface bank = new Bank();
-
-            bank.createMockAccounts();
+            BankInterface bank = new Bank();
 
             // Create RMI server as a UnicastRemoteObject
             int port;
@@ -103,15 +112,5 @@ public class Bank implements BankInterface {
             System.err.println("Bank Server RemoteException!");
             e.printStackTrace();
         }
-    }
-
-    private void createMockAccounts() {
-        PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
-        jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000)); // TODO: Actual date in the past
-        // TODO: This Date constructor is depreciated?
-        jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
-        jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
-        this.accounts.add(jack);
-        // TODO: Continue here!
     }
 }
