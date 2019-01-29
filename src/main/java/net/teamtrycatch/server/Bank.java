@@ -16,15 +16,26 @@ import java.util.List;
 public class Bank implements BankInterface {
 //DEBUG public class Bank extends UnicastRemoteObject implements BankInterface {
     private List<Account> accounts; // users accounts
+    // TODO: Make this into an "Account Database" object
 
     public Bank() throws RemoteException {
         accounts = new ArrayList<>();
     }
 
+    // TODO: What do I do with the "throws RemoteException". Nothing I'm doing will throw that...
     public long login(String username, String password) throws RemoteException, InvalidLogin {
-        System.out.println("login!");
-        // TODO: implementation code
-        return -1;
+        for (Account account : accounts) {
+            if (account.getUsername().equals(username)) {
+                if (account.isAuth(username, password)) {
+                    System.out.println("LOGIN SUCCESS!"); // DEBUG
+                    return 1234; // TODO: save new session to file! return a random sessionId
+                } else {
+                    System.err.println("Invalid login " + new Date());
+                    throw new InvalidLogin("Username and password was not correct");
+                }
+            }
+        }
+        throw new InvalidLogin("Username and password was not correct");
     }
 
     public void deposit(int account, int amount, long sessionID) throws RemoteException, InvalidSession {
@@ -80,6 +91,13 @@ public class Bank implements BankInterface {
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind("Bank", stub);
             System.out.println("Bank server has been launched and bound to port " + port);
+
+            //DEBUG:
+            try {
+                bank.login("username1", "password1");
+            } catch (InvalidLogin e) {
+                e.printStackTrace();
+            }
         } catch (RemoteException e) {
             // Swallow exception
             System.err.println("Bank Server RemoteException!");
@@ -88,8 +106,12 @@ public class Bank implements BankInterface {
     }
 
     private void createMockAccounts() {
-        PersonalAccount jack = new PersonalAccount(100, "Jack Doe");
-        jack.addTransaction(new InitialTransaction(new Date(), 1000));
+        PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
+        jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000)); // TODO: Actual date in the past
+        // TODO: This Date constructor is depreciated?
+        jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
+        jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
+        this.accounts.add(jack);
         // TODO: Continue here!
     }
 }

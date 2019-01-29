@@ -75,6 +75,45 @@ public class PersonalAccount implements Account {
         return null;
     }
 
+    @Override
+    public boolean isAuth(String username, String password) {
+        return this.username.equals(username) &&
+               Arrays.equals(this.passwordHashed, hashPasswordAndSalt(password));
+    }
+
+    private void saveHashedPassword(String passwordPlaintext) {
+        // Generate a new salt, as shown in: https://www.baeldung.com/java-password-hashing
+        SecureRandom rnd = new SecureRandom();
+        this.passwordSalt = new byte[16];
+        rnd.nextBytes(this.passwordSalt);
+        System.out.print("Salt=");
+        for (byte elem : this.passwordSalt) {
+            System.out.print(elem);
+        }
+        System.out.println();
+
+        // Hash salt + password plaintext
+        this.passwordHashed = hashPasswordAndSalt(passwordPlaintext);
+    }
+
+    private byte[] hashPasswordAndSalt(String password) {
+        try {
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), this.passwordSalt, 65536, 128);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            byte[] hash = factory.generateSecret(spec).getEncoded();
+            System.out.print("Hashed PW=");
+            for (byte elem : hash) {
+                System.out.print(elem);
+            }
+            System.out.println();
+            return hash;
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e); // DEBUG: want to add these exceptions to the method signature? Is there a pattern I can use here to justify this?
+        }
+    }
+
+    @Override
     public void addTransaction(Transaction t) {
         transactions.add(t);
     }
