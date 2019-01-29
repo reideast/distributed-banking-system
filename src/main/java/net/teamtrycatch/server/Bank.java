@@ -9,17 +9,17 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Bank implements BankInterface {
 //DEBUG public class Bank extends UnicastRemoteObject implements BankInterface {
-    private List<Account> accounts; // users accounts
+//    private List<Account> accounts; // users accounts
     // TODO: Make this into an "Account Database" object
+    private AccountDatastore accounts;
 
     public Bank() throws RemoteException {
-        accounts = new ArrayList<>();
+//        accounts = new ArrayList<>();
+        accounts = new AccountDatastoreImpl();
 
         this.createMockAccounts(); // Note: This is for the simplified application only. A real app would use a database for these
     }
