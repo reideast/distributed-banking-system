@@ -20,6 +20,8 @@ public class PersonalAccount implements Account {
     private byte[] passwordHashed;
     private byte[] passwordSalt;
     private ArrayList<Transaction> transactions;
+    private boolean isAccountInitialised;
+    private int balance;
 
     public PersonalAccount(int accountNum, String accountHolderName, String username, String password) {
         this.accountNum = accountNum;
@@ -27,11 +29,8 @@ public class PersonalAccount implements Account {
         this.username = username;
         this.generateHashedPassword(password);
         transactions = new ArrayList<>();
-    }
-
-    public PersonalAccount(int accountNum, String accountHolderName, String username, String password, List<Transaction> importTransactions) {
-        this(accountNum, accountHolderName, username, password);
-        transactions.addAll(importTransactions);
+        isAccountInitialised = false;
+        balance = 0;
     }
 
     @Override
@@ -107,7 +106,24 @@ public class PersonalAccount implements Account {
     }
 
     @Override
+    public int getBalance() {
+        return balance;
+    }
+
+    @Override
     public void addTransaction(Transaction t) {
+        if (t instanceof InitialTransaction) {
+            if (isAccountInitialised) {
+                throw new IllegalStateException("Account has already been initialised with a beginning balance");
+            }
+            balance = t.getAmount();
+        } else if (t instanceof DepositTransaction) {
+            balance += t.getAmount();
+        } else if (t instanceof WithdrawalTransaction) {
+            balance -= t.getAmount();
+        } else {
+            throw new IllegalArgumentException("Invalid transaction type provided: " + t.getClass().getName());
+        }
         transactions.add(t);
     }
 

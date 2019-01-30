@@ -19,6 +19,8 @@ public interface Account {
 
     public void setPassword(String newPassword);
 
+    public int getBalance();
+
     public void addTransaction(Transaction t);
 
     /**
