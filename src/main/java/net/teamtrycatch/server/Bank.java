@@ -25,29 +25,35 @@ public class Bank implements BankInterface {
     }
 
     private void createMockAccounts() {
-        PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
-        jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000)); // TODO: Actual date in the past
-        // TODO: This Date constructor is depreciated?
-        jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
-        jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
-        this.accounts.add(jack);
-        // TODO: Continue here!
+        try {
+            PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
+            jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000)); // TODO: Actual date in the past
+            // TODO: This Date constructor is depreciated?
+            jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
+            jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
+            this.accounts.add(jack);
+            // TODO: Continue here!
+        } catch (DuplicateAccountInformationException e) {
+            System.err.println("Could not set up server! Duplicate account created: " + e.getMessage()); // TODO: Logging library
+            throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException
+        }
     }
 
     // TODO: What do I do with the "throws RemoteException". Nothing I'm doing will throw that...
     public long login(String username, String password) throws RemoteException, InvalidLogin {
-        for (Account account : accounts) {
-            if (account.getUsername().equals(username)) {
-                if (account.isAuth(username, password)) {
-                    System.out.println("LOGIN SUCCESS!"); // DEBUG
-                    return 1234; // TODO: save new session to file! return a random sessionId
-                } else {
-                    System.err.println("Invalid login " + new Date());
-                    throw new InvalidLogin("Username and password was not correct");
-                }
+        try {
+            Account accountForUsername = accounts.findByUsername(username);
+            if (accountForUsername.isAuth(username, password)) {
+                System.out.println("LOGIN SUCCESS!"); // DEBUG
+                return 1234; // TODO: save new session to file! return a random sessionId
+            } else {
+                System.err.println("Invalid login (password '" + password + "' was incorrect for username '" + username + "')" + new Date()); // TODO: Import logging library
+                throw new InvalidLogin("Username and password was not correct");
             }
+        } catch (AccountNotFoundException e) {
+            System.err.println("Invalid login (username '" + username + "' not found) " + new Date()); // TODO: Import logging library
+            throw new InvalidLogin("Username and password was not correct");
         }
-        throw new InvalidLogin("Username and password was not correct");
     }
 
     public void deposit(int account, int amount, long sessionID) throws RemoteException, InvalidSession {
