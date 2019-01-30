@@ -9,42 +9,46 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Logger;
 
 public class Bank implements BankInterface {
-//DEBUG public class Bank extends UnicastRemoteObject implements BankInterface {
-//    private List<Account> accounts; // users accounts
-    // TODO: Make this into an "Account Database" object
     private AccountDatastore accounts;
+    private static Logger logger = Logger.getLogger("Bank");
 
     public Bank() throws RemoteException {
-//        accounts = new ArrayList<>();
         accounts = new AccountDatastoreImpl();
-
         this.createMockAccounts(); // Note: This is for the simplified application only. A real app would use a database for these
     }
 
+    // TODO: JavaDoc
     private void createMockAccounts() {
         try {
+            DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm");
             PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
-            jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000));
-            // TODO: This Date constructor is depreciated?
-            jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
-            jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
+            jack.addTransaction(new InitialTransaction(df.parse("22 Feb 2018 16:21"), 1000));
+            jack.addTransaction(new WithdrawalTransaction(df.parse("1 Mar 2018 11:30"), 311));
+            jack.addTransaction(new DepositTransaction(df.parse("23 Mar 2018 10:00"), 1200));
             accounts.add(jack);
-            System.out.println("Added account: " + jack + " with password " + "password1");
+            logger.info("Added account: " + jack + " with password " + "password1");
 
             PersonalAccount jane = new PersonalAccount(200, "Jane Doe", "username2", "password2");
-            jane.addTransaction(new InitialTransaction(new Date(2016, 3, 20, 10, 30), 2000));
-            jane.addTransaction(new DepositTransaction(new Date(2016, 4, 1, 14, 12), 1500));
-            jane.addTransaction(new WithdrawalTransaction(new Date(2016, 4, 2, 12, 55), 120));
-            jane.addTransaction(new WithdrawalTransaction(new Date(2016, 4, 2, 14, 21), 18));
-            jane.addTransaction(new WithdrawalTransaction(new Date(2018, 8, 14, 13, 51), 220));
-            jane.addTransaction(new DepositTransaction(new Date(2018, 8, 1, 14, 5), 1850));
+            jane.addTransaction(new InitialTransaction(df.parse("20 Mar 2016 10:30"), 2000));
+            jane.addTransaction(new DepositTransaction(df.parse("1 Apr 2016 14:12"), 1500));
+            jane.addTransaction(new WithdrawalTransaction(df.parse("2 Apr 2016 12:55"), 120));
+            jane.addTransaction(new WithdrawalTransaction(df.parse("2 Apr 2016 14:21"), 18));
+            jane.addTransaction(new WithdrawalTransaction(df.parse("14 Aug 2018 13:51"), 220));
+            jane.addTransaction(new DepositTransaction(df.parse("1 Sep 2018 14:05"), 1850));
             accounts.add(jane);
-            System.out.println("Added account: " + jane + " with password " + "password2");
+            logger.info("Added account: " + jane + " with password " + "password2");
         } catch (DuplicateAccountInformationException e) {
-            System.err.println("Could not set up server! Duplicate account created: " + e.getMessage()); // TODO: Logging library
+            logger.severe("Could not set up server! Duplicate account created: " + e.getMessage());
+            throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException
+        } catch (ParseException e) {
+            logger.severe("Could not set up server! Date could not be parsed: " + e.getMessage());
             throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException
         }
     }
@@ -54,36 +58,36 @@ public class Bank implements BankInterface {
         try {
             Account accountForUsername = accounts.findByUsername(username);
             if (accountForUsername.isAuth(username, password)) {
-                System.out.println("LOGIN SUCCESS!"); // DEBUG
+                logger.info("LOGIN SUCCESS!"); // DEBUG
                 return 1234; // TODO: save new session to file! return a random sessionId
             } else {
-                System.err.println("Invalid login (password '" + password + "' was incorrect for username '" + username + "')" + new Date()); // TODO: Import logging library
+                logger.warning("Invalid login (password '" + password + "' was incorrect for username '" + username + "')" + new Date());
                 throw new InvalidLogin("Username and password was not correct");
             }
         } catch (AccountNotFoundException e) {
-            System.err.println("Invalid login (username '" + username + "' not found) " + new Date()); // TODO: Import logging library
+            logger.warning("Invalid login (username '" + username + "' not found) " + new Date());
             throw new InvalidLogin("Username and password was not correct");
         }
     }
 
     public void deposit(int account, int amount, long sessionID) throws RemoteException, InvalidSession {
-        System.out.println("deposit!");
+        logger.warning("deposit!");
         // TODO: implementation code
     }
 
     public void withdraw(int account, int amount, long sessionID) throws RemoteException, InvalidSession {
-        System.out.println("withdraw!");
+        logger.warning("withdraw!");
         // TODO: implementation code
     }
 
     public int inquiry(int account, long sessionID) throws RemoteException, InvalidSession {
-        System.out.println("inquery!");
+        logger.warning("inquery!");
         // TODO: implementation code
         return -1;
     }
 
     public Statement getStatement(Date from, Date to, long sessionID) throws RemoteException, InvalidSession {
-        System.out.println("getStatement!");
+        logger.warning("getStatement!");
         // TODO: implementation code
         return null;
     }
@@ -115,7 +119,7 @@ public class Bank implements BankInterface {
             // Bind compute engine to name server
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind("Bank", stub);
-            System.out.println("Bank server has been launched and bound to port " + port);
+            logger.info("Bank server has been launched and bound to port " + port);
 
             //DEBUG:
             try {
@@ -125,7 +129,7 @@ public class Bank implements BankInterface {
             }
         } catch (RemoteException e) {
             // Swallow exception
-            System.err.println("Bank Server RemoteException!");
+            logger.severe("Bank Server RemoteException!");
             e.printStackTrace();
         }
     }
