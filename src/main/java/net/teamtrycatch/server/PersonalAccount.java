@@ -110,4 +110,13 @@ public class PersonalAccount implements Account {
     public void addTransaction(Transaction t) {
         transactions.add(t);
     }
+
+    @Override
+    public String toString() {
+        return "PersonalAccount{" +
+                "accountNum=" + accountNum +
+                ", accountHolderName='" + accountHolderName + '\'' +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }

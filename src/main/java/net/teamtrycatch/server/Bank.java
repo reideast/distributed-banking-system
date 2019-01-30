@@ -27,12 +27,22 @@ public class Bank implements BankInterface {
     private void createMockAccounts() {
         try {
             PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
-            jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000)); // TODO: Actual date in the past
+            jack.addTransaction(new InitialTransaction(new Date(2018, 2, 22, 16, 21), 1000));
             // TODO: This Date constructor is depreciated?
             jack.addTransaction(new WithdrawalTransaction(new Date(2018, 3, 1, 11, 30), 311));
             jack.addTransaction(new DepositTransaction(new Date(2018, 3, 23, 10, 0), 1200));
-            this.accounts.add(jack);
-            // TODO: Continue here!
+            accounts.add(jack);
+            System.out.println("Added account: " + jack + " with password " + "password1");
+
+            PersonalAccount jane = new PersonalAccount(200, "Jane Doe", "username2", "password2");
+            jane.addTransaction(new InitialTransaction(new Date(2016, 3, 20, 10, 30), 2000));
+            jane.addTransaction(new DepositTransaction(new Date(2016, 4, 1, 14, 12), 1500));
+            jane.addTransaction(new WithdrawalTransaction(new Date(2016, 4, 2, 12, 55), 120));
+            jane.addTransaction(new WithdrawalTransaction(new Date(2016, 4, 2, 14, 21), 18));
+            jane.addTransaction(new WithdrawalTransaction(new Date(2018, 8, 14, 13, 51), 220));
+            jane.addTransaction(new DepositTransaction(new Date(2018, 8, 1, 14, 5), 1850));
+            accounts.add(jane);
+            System.out.println("Added account: " + jane + " with password " + "password2");
         } catch (DuplicateAccountInformationException e) {
             System.err.println("Could not set up server! Duplicate account created: " + e.getMessage()); // TODO: Logging library
             throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException
