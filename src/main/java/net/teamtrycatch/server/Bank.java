@@ -59,7 +59,7 @@ public class Bank implements BankInterface {
             Account accountForUsername = accounts.findByUsername(username);
             if (accountForUsername.isAuth(username, password)) {
                 logger.info("LOGIN SUCCESS!"); // DEBUG
-                return 1234; // TODO: save new session to file! return a random sessionId
+                return 1234; // TODO: SessionID: save new session to file! return a random sessionId
             } else {
                 logger.warning("Invalid login (password '" + password + "' was incorrect for username '" + username + "')" + new Date());
                 throw new InvalidLogin("Username and password was not correct");
@@ -70,20 +70,41 @@ public class Bank implements BankInterface {
         }
     }
 
-    public void deposit(int account, int amount, long sessionID) throws RemoteException, InvalidSession {
-        logger.warning("deposit!");
-        // TODO: implementation code
+    public void deposit(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount must not be negative");
+        }
+        try {
+            Account account = accounts.findByAccountNum(accountNum);
+            // TODO: SessionID: Validate session files, else throw exception
+            account.addTransaction(new DepositTransaction(new Date(), amount));
+        } catch (AccountNotFoundException e) {
+            // TODO
+        }
     }
 
-    public void withdraw(int account, int amount, long sessionID) throws RemoteException, InvalidSession {
-        logger.warning("withdraw!");
-        // TODO: implementation code
+    public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount must not be negative");
+        }
+        try {
+            Account account = accounts.findByAccountNum(accountNum);
+            // TODO: SessionID: Validate session files, else throw exception
+            account.addTransaction(new WithdrawalTransaction(new Date(), amount));
+        } catch (AccountNotFoundException e) {
+            // TODO
+        }
     }
 
-    public int inquiry(int account, long sessionID) throws RemoteException, InvalidSession {
-        logger.warning("inquery!");
-        // TODO: implementation code
-        return -1;
+    public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession {
+        try {
+            Account account = accounts.findByAccountNum(accountNum);
+            // TODO: SessionID: Validate session files, else throw exception
+            return account.getBalance();
+        } catch (AccountNotFoundException e) {
+            // TODO
+            return -1;
+        }
     }
 
     public Statement getStatement(Date from, Date to, long sessionID) throws RemoteException, InvalidSession {
