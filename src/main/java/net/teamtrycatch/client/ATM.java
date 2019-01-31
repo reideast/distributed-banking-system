@@ -1,5 +1,6 @@
 package net.teamtrycatch.client;
 
+import net.teamtrycatch.shared.AccountNotFoundException;
 import net.teamtrycatch.shared.BankInterface;
 import net.teamtrycatch.shared.InvalidLogin;
 import net.teamtrycatch.shared.InvalidSession;
@@ -21,18 +22,16 @@ public class ATM {
         }
 
         try {
-            Registry registry = LocateRegistry.getRegistry(registryAddress, port);
+//            Registry registry = LocateRegistry.getRegistry(registryAddress, port);
+            Registry registry = LocateRegistry.getRegistry();
             BankInterface bank = (BankInterface) registry.lookup("Bank");
 
-            long sessionID = bank.login("user1", "password1");
+            long sessionID = bank.login("username1", "password1");
 
-            bank.inquiry(1234, sessionID);
+            bank.inquiry(200, sessionID);
 
-        } catch (InvalidLogin e) {
+        } catch (InvalidLogin | InvalidSession | AccountNotFoundException e) {
             System.err.println("ATM Client InvalidLogin");
-            e.printStackTrace();
-        } catch (InvalidSession e) {
-            System.err.println("ATM Client InvalidSession");
             e.printStackTrace();
         } catch (RemoteException | NotBoundException e) {
             // Swallow exception
