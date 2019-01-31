@@ -112,6 +112,10 @@ public class PersonalAccount implements Account {
 
     @Override
     public void addTransaction(Transaction t) {
+        if (t.getAmount() < 0) {
+            throw new IllegalArgumentException("Amount must not be negative");
+        }
+
         if (t instanceof InitialTransaction) {
             if (isAccountInitialised) {
                 throw new IllegalStateException("Account has already been initialised with a beginning balance");
@@ -124,6 +128,7 @@ public class PersonalAccount implements Account {
         } else {
             throw new IllegalArgumentException("Invalid transaction type provided: " + t.getClass().getName());
         }
+
         transactions.add(t);
     }
 

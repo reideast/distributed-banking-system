@@ -37,7 +37,7 @@ public class AccountDatastoreImpl implements AccountDatastore {
         if (accountNumberIndex.containsKey(accountNum)) {
             return accountNumberIndex.get(accountNum);
         } else {
-            throw new AccountNotFoundException();
+            throw new AccountNotFoundException("Account number " + accountNum + " was not found");
         }
     }
 
@@ -46,7 +46,7 @@ public class AccountDatastoreImpl implements AccountDatastore {
         if (usernameIndex.containsKey(username)) {
             return usernameIndex.get(username);
         } else {
-            throw new AccountNotFoundException();
+            throw new AccountNotFoundException("Username + '" + username + "' was not found");
         }
     }
 }

@@ -1,4 +1,12 @@
 package net.teamtrycatch.server;
 
-public class AccountNotFoundException extends Exception {
+import net.teamtrycatch.shared.InvalidSession;
+
+public class AccountNotFoundException extends InvalidSession {
+    public AccountNotFoundException(String message) {
+        super(message);
+    }
+
+    public AccountNotFoundException() {
+    }
 }
