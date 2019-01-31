@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Bank implements BankInterface {
@@ -118,6 +119,15 @@ public class Bank implements BankInterface {
      * Much of this code is derived from the Oracle Java RMI Tutorial path
      */
     public static void main(String[] args) {
+        // Parse command line arguments
+        int port;
+        if (args.length >= 1) {
+            port = Integer.parseInt(args[0]);
+        } else {
+            System.out.println("Usage: " + Bank.class.getSimpleName() + " [port number]");
+            return;
+        }
+
         // Start a security manager, else RMI will not download classes
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());
@@ -128,13 +138,6 @@ public class Bank implements BankInterface {
             BankInterface bank = new Bank();
 
             // Create RMI server as a UnicastRemoteObject
-            int port;
-            if (args.length != 0) {
-                port = Integer.parseInt(args[0]);
-            } else {
-                // Port 0 means use the default
-                port = 0;
-            }
             BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, port);
 
             // Bind compute engine to name server
@@ -145,8 +148,13 @@ public class Bank implements BankInterface {
             //DEBUG:
             try {
                 bank.login("username1", "password1");
-            } catch (InvalidLogin e) {
-                e.printStackTrace();
+                bank.inquiry(100, 1234);
+                bank.deposit(100, 20, 1234);
+                bank.inquiry(100, 1234);
+                bank.withdraw(100, 100, 1234);
+                bank.inquiry(100, 1234);
+            } catch (InvalidLogin | InvalidSession e) {
+                logger.log(Level.SEVERE, e.getMessage(), e); // Swallow exception
             }
         } catch (RemoteException e) {
             // Swallow exception
