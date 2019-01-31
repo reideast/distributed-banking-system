@@ -1,9 +1,6 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.BankInterface;
-import net.teamtrycatch.shared.InvalidLogin;
-import net.teamtrycatch.shared.InvalidSession;
-import net.teamtrycatch.shared.Statement;
+import net.teamtrycatch.shared.*;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -72,7 +69,7 @@ public class Bank implements BankInterface {
         }
     }
 
-    public void deposit(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession {
+    public void deposit(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount must not be negative");
         }
@@ -81,7 +78,7 @@ public class Bank implements BankInterface {
         account.addTransaction(new DepositTransaction(new Date(), amount));
     }
 
-    public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession {
+    public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount must not be negative");
         }
@@ -90,13 +87,13 @@ public class Bank implements BankInterface {
         account.addTransaction(new WithdrawalTransaction(new Date(), amount));
     }
 
-    public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession {
+    public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
         Account account = accounts.findByAccountNum(accountNum);
         // TODO: SessionID: Validate session files, else throw exception
         return account.getBalance();
     }
 
-    public Statement getStatement(Date from, Date to, long sessionID) throws RemoteException, InvalidSession {
+    public Statement getStatement(Date from, Date to, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
         logger.warning("getStatement!");
         // TODO: implementation code
         return null;
@@ -141,7 +138,7 @@ public class Bank implements BankInterface {
                 bank.inquiry(100, 1234);
                 bank.withdraw(100, 100, 1234);
                 bank.inquiry(100, 1234);
-            } catch (InvalidLogin | InvalidSession e) {
+            } catch (InvalidLogin | InvalidSession | AccountNotFoundException e) {
                 logger.log(Level.SEVERE, e.getMessage(), e); // Swallow exception
             }
         } catch (RemoteException e) {

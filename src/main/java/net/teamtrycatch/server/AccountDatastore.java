@@ -1,5 +1,7 @@
 package net.teamtrycatch.server;
 
+import net.teamtrycatch.shared.AccountNotFoundException;
+
 public interface AccountDatastore {
     /**
      * Will enforce that accounts must not be created with duplicate account numbers or usernames
