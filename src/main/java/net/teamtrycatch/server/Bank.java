@@ -11,12 +11,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Bank implements BankInterface {
-    private AccountDatastore accounts;
+    AccountDatastore accounts;
     private static Logger logger = Logger.getLogger("Bank");
 
     public Bank() throws RemoteException {
         accounts = new AccountDatastoreImpl();
-        AccountDatastoreImpl.createMockAccounts(accounts); // Note: This is for the simplified application only. A real app would use a database for these
     }
 
     // TODO: What do I do with the "throws RemoteException". Nothing I'm doing will throw that...
@@ -94,7 +93,9 @@ public class Bank implements BankInterface {
 
         try {
             // Create bank instance (this class)
-            BankInterface bank = new Bank();
+            Bank bank = new Bank();
+
+            AccountDatastoreImpl.createMockAccounts(bank.accounts); // Note: This is for the simplified application only. A real app would use a database for these
 
             // Create RMI server as a UnicastRemoteObject
             BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, port);
