@@ -70,8 +70,13 @@ public class PersonalAccount implements Account {
 
     @Override
     public List<Transaction> getTransactionRange(Date beginDate, Date endDate) {
-        // TODO
-        throw new RuntimeException("Not implemented yet");
+        ArrayList<Transaction> includedTransactions = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            if (transaction.getDate().after(beginDate) && transaction.getDate().before(endDate)) {
+                includedTransactions.add(transaction);
+            }
+        }
+        return includedTransactions;
     }
 
     @Override
