@@ -121,12 +121,18 @@ public class PersonalAccount implements Account {
                 throw new IllegalStateException("Account has already been initialised with a beginning balance");
             }
             balance = t.getAmount();
-        } else if (t instanceof DepositTransaction) {
-            balance += t.getAmount();
-        } else if (t instanceof WithdrawalTransaction) {
-            balance -= t.getAmount();
+            isAccountInitialised = true;
         } else {
-            throw new IllegalArgumentException("Invalid transaction type provided: " + t.getClass().getName());
+            if (!isAccountInitialised) {
+                throw new IllegalStateException("Account cannot have any transactions added until it has been initialised with a beginning balance");
+            }
+            if (t instanceof DepositTransaction) {
+                balance += t.getAmount();
+            } else if (t instanceof WithdrawalTransaction) {
+                balance -= t.getAmount();
+            } else {
+                throw new IllegalArgumentException("Invalid transaction type provided: " + t.getClass().getName());
+            }
         }
 
         transactions.add(t);
