@@ -1,8 +1,6 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.InvalidLogin;
-import net.teamtrycatch.shared.Statement;
-import net.teamtrycatch.shared.Transaction;
+import net.teamtrycatch.shared.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,25 +57,60 @@ public class BankTest {
 
     @Test
     public void notLoggedIn() throws Exception {
-        // TODO: try operations before being logged in
-        // TODO: login as one user, then attempt operations as the other
+        // Operations before being logged in fail
+        try {
+            bank.deposit(ACCOUNT_NUM, 100, 1);
+            fail("Cannot do operations before logging in");
+        } catch (InvalidSession ignored) {}
+
+        // Login afterwards with that account number still works
+        long sessionID = bank.login(USERNAME, PASSWORD);
+        bank.deposit(ACCOUNT_NUM, 100, sessionID);
     }
 
     @Test
     public void sessions() throws Exception {
-        // TODO: sessions, good and bad
-        // TODO: login with one user, and try with other user
+        long sessionID = bank.login(USERNAME, PASSWORD);
+        try {
+            bank.deposit(ACCOUNT_NUM, 100, 1234567);
+            fail("Cannot do operations with invalid session ID");
+        } catch (InvalidSession ignored) {}
+        bank.deposit(ACCOUNT_NUM, 100, sessionID); // Operation succeeds
+
+        // Login as one user, then attempt operations as the other fail
+        try {
+            bank.deposit(ACCOUNT_NUM_B, 100, sessionID);
+            fail("AccountB is not the one that logged in");
+        } catch (InvalidSession ignored) {}
+
+        // Logged-in session should be invalidated after attempting an operation with the wrong account number
+        try {
+            bank.deposit(ACCOUNT_NUM, 100, sessionID);
+            fail("Session is now invalided");
+        } catch (InvalidSession ignored) {}
+
+        // Can login again
+        sessionID = bank.login(USERNAME, PASSWORD);
+        bank.deposit(ACCOUNT_NUM, 100, sessionID); // Operation succeeds
     }
 
     @Test
     public void accountNumbers() throws Exception {
-        // TODO: combinations of correct and incorrect account numbers
+        long sessionID = bank.login(USERNAME, PASSWORD);
+        bank.deposit(ACCOUNT_NUM, 100, sessionID); // Operation succeeds
+
+        try {
+            bank.deposit(987654, 100, sessionID);
+            fail("Cannot do operations with unknown account number");
+        } catch (AccountNotFoundException ignored) {}
+
+        sessionID = bank.login(USERNAME, PASSWORD);
+        try {
+            bank.deposit(ACCOUNT_NUM_B, 100, sessionID);
+            fail("Cannot do operations with a different account's number");
+        } catch (InvalidSession ignored) {}
     }
 
-//        bank.login()
-//        jane.addTransaction(new InitialTransaction(df.parse("20 Mar 2016 10:30"), 2000));
-//        jane.addTransaction(new DepositTransaction(df.parse("1 Apr 2016 14:12"), 1500));
-//        jane.addTransaction(new WithdrawalTransaction(df.parse("2 Apr 2016 12:55"), 120));
     @Test
     public void transactions() throws Exception {
         long sessionID = bank.login(USERNAME, PASSWORD);
@@ -126,5 +159,7 @@ public class BankTest {
         for (Transaction t : transactionRange) {
             assertTrue(t instanceof WithdrawalTransaction);
         }
+
+        assertEquals("Account Holder", stmt.getAccountName());
     }
 }

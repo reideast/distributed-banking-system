@@ -105,18 +105,6 @@ public class Bank implements BankInterface {
             registry.rebind("Bank", stub);
 
             logger.info("Bank server has been launched and bound to port " + port);
-
-            //DEBUG:
-            try {
-                bank.login("username1", "password1");
-                bank.inquiry(100, 1234);
-                bank.deposit(100, 20, 1234);
-                bank.inquiry(100, 1234);
-                bank.withdraw(100, 100, 1234);
-                bank.inquiry(100, 1234);
-            } catch (InvalidLogin | InvalidSession | AccountNotFoundException e) {
-                logger.log(Level.SEVERE, e.getMessage(), e); // Swallow exception
-            }
         } catch (RemoteException e) {
             logger.severe("Server could not startup due to a remote exception" + e.getMessage());
             throw e; // This SHOULD crash the server process, so re-throw
