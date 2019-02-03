@@ -7,7 +7,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Bank implements BankInterface {
@@ -23,8 +22,8 @@ public class Bank implements BankInterface {
         try {
             Account accountForUsername = accounts.findByUsername(username);
             if (accountForUsername.isAuth(username, password)) {
-                logger.info("LOGIN SUCCESS!"); // DEBUG
-                return 1234; // TODO: SessionID: save new session to file! return a random sessionId
+                logger.info("Login success, accountNum=" + accountForUsername.getAccountNum() + ", name='" + accountForUsername.getAccountName() + "'");
+                return startNewSession(accountForUsername.getAccountNum());
             } else {
                 logger.warning("Invalid login (password '" + password + "' was incorrect for username '" + username + "')" + new Date());
                 throw new InvalidLogin("Username and password was not correct");
@@ -36,12 +35,39 @@ public class Bank implements BankInterface {
         }
     }
 
+    /**
+     * Begin a new session, generating a session ID, and saving expiration time and account number to a file
+     * @param accountNum Details of account to save
+     * @return Generated session ID
+     */
+    private long startNewSession(int accountNum) {
+        throw new RuntimeException("Not implemented");
+    }
+
+    /**
+     * Validate that this session currently exists, is valid for this time range, and is for this account number
+     * @param sessionID Session file to locate
+     * @param accountNum Number which should be inside that session file
+     * @throws InvalidSession Error if session does not exist or if account number is not for this session
+     */
+    private void verifySession(long sessionID, int accountNum) throws InvalidSession {
+        throw new RuntimeException("Not implemented");
+    }
+
+    /**
+     * Remove this session file from disk so it cannot be used again
+     * @param sessionID Session file to find. May or may not exist on disk
+     */
+    private void invalidateSession(long sessionID) {
+        throw new RuntimeException("Not implemented");
+    }
+
     public void deposit(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount must not be negative");
         }
         Account account = accounts.findByAccountNum(accountNum);
-        // TODO: SessionID: Validate session files, else throw exception
+        verifySession(sessionID, accountNum);
         account.addTransaction(new DepositTransaction(new Date(), amount));
     }
 
@@ -50,13 +76,13 @@ public class Bank implements BankInterface {
             throw new IllegalArgumentException("Amount must not be negative");
         }
         Account account = accounts.findByAccountNum(accountNum);
-        // TODO: SessionID: Validate session files, else throw exception
+        verifySession(sessionID, accountNum);
         account.addTransaction(new WithdrawalTransaction(new Date(), amount));
     }
 
     public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
         Account account = accounts.findByAccountNum(accountNum);
-        // TODO: SessionID: Validate session files, else throw exception
+        verifySession(sessionID, accountNum);
         return account.getBalance();
     }
 
@@ -65,8 +91,7 @@ public class Bank implements BankInterface {
             throw new IllegalArgumentException("From date must be chronologically before To date");
         }
 
-        // TODO: SessionID: Validate session files, else throw exception
-
+        verifySession(sessionID, accountNum);
         Account account = accounts.findByAccountNum(accountNum);
         return new StatementImpl(account.getAccountNum(), account.getAccountName(), from, to,
                 account.getTransactionRange(from, to));
