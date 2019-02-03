@@ -14,6 +14,19 @@ public class StatementImpl implements Statement {
     private String accountName;
     private ArrayList<Transaction> transactions;
 
+    public StatementImpl(int accountNum, String accountName, Date startDate, Date endDate) {
+        this.accountNum = accountNum;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.accountName = accountName;
+        this.transactions = new ArrayList<>();
+    }
+
+    public StatementImpl(int accountNum, String accountName, Date startDate, Date endDate, List<Transaction> transactions) {
+        this(accountNum, accountName, startDate, endDate);
+        this.transactions.addAll(transactions);
+    }
+
     @Override
     public int getAccountNum() {
         return accountNum;
@@ -55,7 +68,7 @@ public class StatementImpl implements Statement {
         return transactions;
     }
 
-    public void setTransactions(ArrayList<Transaction> transactions) {
-        this.transactions = transactions;
+    public void addTransaction(Transaction t) {
+        this.transactions.add(t);
     }
 }

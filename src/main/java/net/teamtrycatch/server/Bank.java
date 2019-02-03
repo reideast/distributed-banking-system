@@ -61,10 +61,16 @@ public class Bank implements BankInterface {
         return account.getBalance();
     }
 
-    public Statement getStatement(Date from, Date to, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
-        logger.warning("getStatement!");
-        // TODO: implementation code
-        return null;
+    public Statement getStatement(int accountNum, Date from, Date to, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
+        if (to.before(from)) {
+            throw new IllegalArgumentException("From date must be chronologically before To date");
+        }
+
+        // TODO: SessionID: Validate session files, else throw exception
+
+        Account account = accounts.findByAccountNum(accountNum);
+        return new StatementImpl(account.getAccountNum(), account.getAccountName(), from, to,
+                account.getTransactionRange(from, to));
     }
 
     /**

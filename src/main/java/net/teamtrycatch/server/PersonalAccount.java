@@ -64,14 +64,14 @@ public class PersonalAccount implements Account {
     }
 
     @Override
-    public List getAllTransactions() {
+    public List<Transaction> getAllTransactions() {
         return transactions;
     }
 
     @Override
-    public List getTransactionRange(Date beginDate, Date endDate) {
+    public List<Transaction> getTransactionRange(Date beginDate, Date endDate) {
         // TODO
-        return null;
+        throw new RuntimeException("Not implemented yet");
     }
 
     @Override
