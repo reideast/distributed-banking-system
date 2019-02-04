@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -83,6 +84,12 @@ public class AccountDatastoreImpl implements AccountDatastore {
             jane.addTransaction(new DepositTransaction(df.parse("1 Sep 2018 14:05"), 1850));
             accounts.add(jane);
             logger.info("Added account: " + jane + " with password " + "password2");
+
+            // An account with only an initial transaction of €0 and today's date
+            PersonalAccount lisa = new PersonalAccount(300, "Lisa Doe", "username3", "password3");
+            lisa.addTransaction(new InitialTransaction(new Date(), 0));
+            accounts.add(lisa);
+            logger.info("Added account " + lisa + " with password " + "password3");
         } catch (DuplicateAccountInformationException e) {
             logger.severe("Could not set up server! Duplicate account created: " + e.getMessage());
             throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException

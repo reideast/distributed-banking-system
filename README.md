@@ -46,3 +46,7 @@ TODO
 1. [Optional] If "shared" classes were modified: `./run-registry`
 1. [Optional] If "server" classes were modified: `./run-server`
 1. `./run-client`
+
+## Test Script
+
+There exists a `test-script` file, which will start the registry, server, and then run a series of client ATM operations, which we believe cover most normal operations and edge cases
