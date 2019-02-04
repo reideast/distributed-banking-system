@@ -37,9 +37,14 @@ Whenever any changes to the client or server are made, the Maven package command
 
 ### Linux/MacOS
 
-TODO
+Bash scripts (`*.sh`) with the same functionality as above have been created. However these have only been tested in the Cygwin bash shell (Win-64)
 
-### Developer Workflow Summary
+### Test Script
+
+There exists a `test-script` file (both Windows and Linux), which will start the registry, server, and then run a series of client ATM operations,
+which we believe cover most normal operations and edge cases
+
+## Developer Workflow Summary
 
 1. Modify code
 1. `mvn package`
@@ -47,6 +52,3 @@ TODO
 1. [Optional] If "server" classes were modified: `./run-server`
 1. `./run-client`
 
-## Test Script
-
-There exists a `test-script` file, which will start the registry, server, and then run a series of client ATM operations, which we believe cover most normal operations and edge cases

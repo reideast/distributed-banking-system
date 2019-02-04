@@ -10,7 +10,7 @@ function client {
     java -cp "target\client.jar;target\shared.jar" "-Djava.security.policy=.\target\classes\client.policy" net.teamtrycatch.client.ATM localhost 7777 $args
 }
 
-Write-Host "`nAttempting operation before loggin in: should fail"
+Write-Host "`nAttempting operation before logging in: should fail"
 client inquery 100
 
 Write-Host "`nGood sequence: login, get balance, deposit, withdraw, and get a statement"
@@ -40,9 +40,9 @@ Pause
 Write-Host "`nShow session timeout: Login again, do an operation. Wait five minutes (!) and show another operation fails"
 client login username2 password2
 client inquery 200
-#Write-Host "Sleeping for" (60 * 5 + 10) "seconds"
-#Start-Sleep -Seconds (60 * 5 + 10)
-Write-Host "Sleeping for" (5) "seconds"
-Start-Sleep -Seconds (5)
+Write-Host "Sleeping for" (60 * 5 + 10) "seconds"
+Start-Sleep -Seconds (60 * 5 + 10)
+#Write-Host "Sleeping for" (5) "seconds"
+#Start-Sleep -Seconds (5)
 client inquery 200  # Session expired error
 
