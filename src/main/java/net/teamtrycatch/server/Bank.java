@@ -28,6 +28,7 @@ public class Bank implements BankInterface {
 
     private Random rnd = new Random();
     private static final TemporalAmount FIVE_MINUTES = Duration.ofMinutes(5);
+    private static final String SESSION_DIRECTORY = "server-sessions";
 
     public Bank() throws RemoteException {
         accounts = new AccountDatastoreImpl();
@@ -60,7 +61,7 @@ public class Bank implements BankInterface {
     private long startNewSession(int accountNum) throws ServerException {
         long sessionID = Math.abs(rnd.nextLong());
 
-        try (FileWriter file = new FileWriter(sessionID + ".session")) {
+        try (FileWriter file = new FileWriter(SESSION_DIRECTORY + File.separator + sessionID + ".session")) {
             try (PrintWriter writer = new PrintWriter(file)) {
                 // Store account number
                 writer.println(accountNum);
@@ -85,7 +86,7 @@ public class Bank implements BankInterface {
      * @throws ServerException Error if server has critical error (from IO)
      */
     private void verifySession(long sessionID, int accountNum) throws InvalidSession, ServerException {
-        try (FileReader file = new FileReader(sessionID + ".session")) {
+        try (FileReader file = new FileReader(SESSION_DIRECTORY + File.separator + sessionID + ".session")) {
             int accountNumLine;
             long expirationTimeLine;
 
@@ -130,7 +131,7 @@ public class Bank implements BankInterface {
      */
     private void invalidateSession(long sessionID) {
         try {
-            Files.deleteIfExists((new File(sessionID + ".session")).toPath());
+            Files.deleteIfExists((new File(SESSION_DIRECTORY + File.separator + sessionID + ".session")).toPath());
             logger.info("Removing session: " + sessionID);
         } catch (NoSuchFileException e) {
             logger.warning("Removing session, file has already been removed: " + sessionID);
