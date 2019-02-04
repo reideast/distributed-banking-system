@@ -59,7 +59,11 @@ public class AccountDatastoreImpl implements AccountDatastore {
         }
     }
 
-    // TODO: JavaDoc
+    /**
+     * A static method to create several accounts, pre-populated by transactions. This is for mock testing of the client and server interactions
+     * @param accounts The instance of this class in which to store these mock accounts
+     * @throws RuntimeException This method purposefully throws unchecked exceptions, so that the server process will crash
+     */
     public static void createMockAccounts(AccountDatastore accounts) {
         try {
             DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm");

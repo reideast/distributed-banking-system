@@ -15,7 +15,7 @@ Run Maven phase package:
 
 `mvn package`
 
-Whenever any changes to the client or server are made, the Maven package command will rebuild those JARs, which the below scripts will utilise to run.
+Whenever any changes to the client or server are made, the Maven package command will compile, run tests, and then rebuild those JARs, which the below scripts will utilise to run.
 
 ## How to Run
 
@@ -32,7 +32,7 @@ Whenever any changes to the client or server are made, the Maven package command
 
 1. Start ATM client
    * `./run-client.ps1`
-   * This batch file has no additional arguments to actually do any ATM operations. They could be added at the end of the line
+   * This batch file has no additional arguments to actually do any ATM operations. They could be added at the end of the line to test various operations
    * The client will run once and then quit.
 
 ### Linux/MacOS

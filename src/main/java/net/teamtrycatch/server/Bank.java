@@ -198,8 +198,6 @@ public class Bank implements BankInterface {
             // Create bank instance (this class)
             Bank bank = new Bank();
 
-            AccountDatastoreImpl.createMockAccounts(bank.accounts); // Note: This is for the simplified application only. A real app would use a database for these
-
             // Create RMI server as a UnicastRemoteObject
             BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, port);
 
@@ -208,6 +206,9 @@ public class Bank implements BankInterface {
             registry.rebind("Bank", stub);
 
             logger.info("Bank server has been launched and bound to port " + port);
+
+            // Create mock accounts
+            AccountDatastoreImpl.createMockAccounts(bank.accounts); // Note: This is for the simplified application only. A real app would use a database for these
         } catch (RemoteException e) {
             logger.severe("Server could not startup due to a remote exception" + e.getMessage());
             throw e; // This SHOULD crash the server process, so re-throw
