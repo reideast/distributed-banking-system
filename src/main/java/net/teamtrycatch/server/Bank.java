@@ -147,6 +147,7 @@ public class Bank implements BankInterface {
         Account account = accounts.findByAccountNum(accountNum);
         verifySession(sessionID, accountNum);
         account.addTransaction(new DepositTransaction(new Date(), amount));
+        logger.info("Deposit completed, account " + accountNum + " amount " + amount);
     }
 
     public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
@@ -156,11 +157,13 @@ public class Bank implements BankInterface {
         Account account = accounts.findByAccountNum(accountNum);
         verifySession(sessionID, accountNum);
         account.addTransaction(new WithdrawalTransaction(new Date(), amount));
+        logger.info("Withdrawal completed, account " + accountNum + " amount " + amount);
     }
 
     public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
         Account account = accounts.findByAccountNum(accountNum);
         verifySession(sessionID, accountNum);
+        logger.info("Account balance inquiry completed, account " + accountNum);
         return account.getBalance();
     }
 
@@ -171,6 +174,7 @@ public class Bank implements BankInterface {
 
         verifySession(sessionID, accountNum);
         Account account = accounts.findByAccountNum(accountNum);
+        logger.info("Preparing statement for account " + accountNum);
         return new StatementImpl(account.getAccountNum(), account.getAccountName(), from, to,
                 account.getTransactionRange(from, to));
     }
