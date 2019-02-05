@@ -48,15 +48,41 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>shared-from-client-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>shared-from-client</finalName>
+                            <includes>
+                                <include>**/shared/client/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>shared-from-server-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>shared-from-server</finalName>
+                            <includes>
+                                <include>**/shared/server/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>shared-interfaces-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <finalName>shared</finalName>
+                            <finalName>interfaces</finalName>
                             <includes>
-                                <include>**/shared/*</include>
+                                <include>**/shared/interfaces/*</include>
                             </includes>
                         </configuration>
                     </execution>

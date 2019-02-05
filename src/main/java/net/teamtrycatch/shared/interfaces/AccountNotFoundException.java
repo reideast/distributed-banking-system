@@ -1,4 +1,4 @@
-package net.teamtrycatch.shared;
+package net.teamtrycatch.shared.interfaces;
 
 public class AccountNotFoundException extends Exception {
     public AccountNotFoundException(String message) {

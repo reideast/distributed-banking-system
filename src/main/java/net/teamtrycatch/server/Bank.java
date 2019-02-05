@@ -1,6 +1,14 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.*;
+import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
+import net.teamtrycatch.shared.server.DepositTransaction;
+import net.teamtrycatch.shared.interfaces.InvalidLogin;
+import net.teamtrycatch.shared.interfaces.InvalidSession;
+import net.teamtrycatch.shared.interfaces.ServerException;
+import net.teamtrycatch.shared.server.StatementImpl;
+import net.teamtrycatch.shared.server.WithdrawalTransaction;
+import net.teamtrycatch.shared.interfaces.BankInterface;
+import net.teamtrycatch.shared.interfaces.Statement;
 
 import java.io.BufferedReader;
 import java.io.File;

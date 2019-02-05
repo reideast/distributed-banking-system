@@ -1,7 +1,7 @@
-package net.teamtrycatch.server;
+package net.teamtrycatch.shared.server;
 
-import net.teamtrycatch.shared.Statement;
-import net.teamtrycatch.shared.Transaction;
+import net.teamtrycatch.shared.interfaces.Statement;
+import net.teamtrycatch.shared.interfaces.Transaction;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -1,6 +1,13 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.*;
+import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
+import net.teamtrycatch.shared.server.DepositTransaction;
+import net.teamtrycatch.shared.server.InitialTransaction;
+import net.teamtrycatch.shared.interfaces.InvalidLogin;
+import net.teamtrycatch.shared.interfaces.InvalidSession;
+import net.teamtrycatch.shared.server.WithdrawalTransaction;
+import net.teamtrycatch.shared.interfaces.Statement;
+import net.teamtrycatch.shared.interfaces.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 

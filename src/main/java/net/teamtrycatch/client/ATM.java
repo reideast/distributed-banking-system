@@ -1,7 +1,6 @@
 package net.teamtrycatch.client;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,21 +10,17 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.management.RuntimeErrorException;
-
-import net.teamtrycatch.server.Bank;
-import net.teamtrycatch.shared.AccountNotFoundException;
-import net.teamtrycatch.shared.BankInterface;
-import net.teamtrycatch.shared.IllegalArguementException;
-import net.teamtrycatch.shared.InvalidLogin;
-import net.teamtrycatch.shared.InvalidSession;
-import net.teamtrycatch.shared.ServerException;
-import net.teamtrycatch.shared.Statement;
+import net.teamtrycatch.shared.client.IllegalArgumentException;
+import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
+import net.teamtrycatch.shared.interfaces.BankInterface;
+import net.teamtrycatch.shared.interfaces.InvalidLogin;
+import net.teamtrycatch.shared.interfaces.InvalidSession;
+import net.teamtrycatch.shared.interfaces.ServerException;
+import net.teamtrycatch.shared.interfaces.Statement;
 
 public class ATM {
 
@@ -33,8 +28,8 @@ public class ATM {
 		super();
 	}
 
-	public static void main(String[] args) throws net.teamtrycatch.shared.AccountNotFoundException, IOException,
-			IllegalArguementException, NotBoundException {
+	public static void main(String[] args) throws AccountNotFoundException, IOException,
+			IllegalArgumentException, NotBoundException {
 		int account = 0, amount = 0, port;
 		String process, username = null, password = null, host;
 		long customer;
@@ -49,11 +44,11 @@ public class ATM {
 		// String host = (args.length < 1) ? null : args[0];
 
 		if (args.length < 2) {
-			throw new IllegalArguementException("You must enter a hosting port");
+			throw new IllegalArgumentException("You must enter a hosting port");
 
 		}
 		if (args.length < 3) {
-			throw new IllegalArguementException(
+			throw new IllegalArgumentException(
 					"You must enter a process to continue Login,Withdraw,Deposit,Inquiry,Statement");
 
 		}
@@ -65,7 +60,7 @@ public class ATM {
 
 		case "login":
 			if (args.length < 5) {
-				throw new IllegalArguementException("Please enter user name and password");
+				throw new IllegalArgumentException("Please enter user name and password");
 
 			}
 			username = args[3];
@@ -74,7 +69,7 @@ public class ATM {
 		case "withdraw":
 		case "deposit":
 			if (args.length < 5) {
-				throw new IllegalArguementException("Please enter amount and account");
+				throw new IllegalArgumentException("Please enter amount and account");
 
 			}
 			amount = (int) Double.parseDouble(args[4]);
@@ -83,7 +78,7 @@ public class ATM {
 			break;
 		case "inquiry":
 			if (args.length < 4) {
-				throw new IllegalArguementException("Please enter account number");
+				throw new IllegalArgumentException("Please enter account number");
 
 			}
 			account = Integer.parseInt(args[3]);
@@ -91,7 +86,7 @@ public class ATM {
 			break;
 		case "statement":
 			if (args.length < 6) {
-				throw new IllegalArguementException("Please enter account number and start and end date");
+				throw new IllegalArgumentException("Please enter account number and start and end date");
 
 			}
 			account = Integer.parseInt(args[3]);
@@ -112,7 +107,7 @@ public class ATM {
 			// sessionID = Long.parseLong(args[6]);
 			break;
 		default:
-			throw new IllegalArguementException("Computer Says no");
+			throw new IllegalArgumentException("Computer Says no");
 
 		}
 		bank = connection(host);
