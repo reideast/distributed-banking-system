@@ -6,3 +6,4 @@
 ~*.docx
 ~*.tmp
 target/
+*.session

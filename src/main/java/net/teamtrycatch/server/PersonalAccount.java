@@ -64,14 +64,19 @@ public class PersonalAccount implements Account {
     }
 
     @Override
-    public List getAllTransactions() {
+    public List<Transaction> getAllTransactions() {
         return transactions;
     }
 
     @Override
-    public List getTransactionRange(Date beginDate, Date endDate) {
-        // TODO
-        return null;
+    public List<Transaction> getTransactionRange(Date beginDate, Date endDate) {
+        ArrayList<Transaction> includedTransactions = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            if (transaction.getDate().after(beginDate) && transaction.getDate().before(endDate)) {
+                includedTransactions.add(transaction);
+            }
+        }
+        return includedTransactions;
     }
 
     @Override
@@ -121,12 +126,18 @@ public class PersonalAccount implements Account {
                 throw new IllegalStateException("Account has already been initialised with a beginning balance");
             }
             balance = t.getAmount();
-        } else if (t instanceof DepositTransaction) {
-            balance += t.getAmount();
-        } else if (t instanceof WithdrawalTransaction) {
-            balance -= t.getAmount();
+            isAccountInitialised = true;
         } else {
-            throw new IllegalArgumentException("Invalid transaction type provided: " + t.getClass().getName());
+            if (!isAccountInitialised) {
+                throw new IllegalStateException("Account cannot have any transactions added until it has been initialised with a beginning balance");
+            }
+            if (t instanceof DepositTransaction) {
+                balance += t.getAmount();
+            } else if (t instanceof WithdrawalTransaction) {
+                balance -= t.getAmount();
+            } else {
+                throw new IllegalArgumentException("Invalid transaction type provided: " + t.getClass().getName());
+            }
         }
 
         transactions.add(t);

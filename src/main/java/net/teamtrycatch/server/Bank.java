@@ -2,62 +2,45 @@ package net.teamtrycatch.server;
 
 import net.teamtrycatch.shared.*;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
-import java.util.logging.Level;
+import java.util.Random;
 import java.util.logging.Logger;
 
 public class Bank implements BankInterface {
-    private AccountDatastore accounts;
     private static Logger logger = Logger.getLogger("Bank");
+
+    AccountDatastore accounts;
+
+    private Random rnd = new Random();
+    private static final TemporalAmount FIVE_MINUTES = Duration.ofMinutes(5);
+    private static final String SESSION_DIRECTORY = "server-sessions";
 
     public Bank() throws RemoteException {
         accounts = new AccountDatastoreImpl();
-        this.createMockAccounts(); // Note: This is for the simplified application only. A real app would use a database for these
-    }
-
-    // TODO: JavaDoc
-    private void createMockAccounts() {
-        try {
-            DateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm");
-            PersonalAccount jack = new PersonalAccount(100, "Jack Doe", "username1", "password1");
-            jack.addTransaction(new InitialTransaction(df.parse("22 Feb 2018 16:21"), 1000));
-            jack.addTransaction(new WithdrawalTransaction(df.parse("1 Mar 2018 11:30"), 311));
-            jack.addTransaction(new DepositTransaction(df.parse("23 Mar 2018 10:00"), 1200));
-            accounts.add(jack);
-            logger.info("Added account: " + jack + " with password " + "password1");
-
-            PersonalAccount jane = new PersonalAccount(200, "Jane Doe", "username2", "password2");
-            jane.addTransaction(new InitialTransaction(df.parse("20 Mar 2016 10:30"), 2000));
-            jane.addTransaction(new DepositTransaction(df.parse("1 Apr 2016 14:12"), 1500));
-            jane.addTransaction(new WithdrawalTransaction(df.parse("2 Apr 2016 12:55"), 120));
-            jane.addTransaction(new WithdrawalTransaction(df.parse("2 Apr 2016 14:21"), 18));
-            jane.addTransaction(new WithdrawalTransaction(df.parse("14 Aug 2018 13:51"), 220));
-            jane.addTransaction(new DepositTransaction(df.parse("1 Sep 2018 14:05"), 1850));
-            accounts.add(jane);
-            logger.info("Added account: " + jane + " with password " + "password2");
-        } catch (DuplicateAccountInformationException e) {
-            logger.severe("Could not set up server! Duplicate account created: " + e.getMessage());
-            throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException
-        } catch (ParseException e) {
-            logger.severe("Could not set up server! Date could not be parsed: " + e.getMessage());
-            throw new RuntimeException(e); // This SHOULD crash the server process, so throw a RuntimeException
-        }
     }
 
     // TODO: What do I do with the "throws RemoteException". Nothing I'm doing will throw that...
-    public long login(String username, String password) throws RemoteException, InvalidLogin {
+    public long login(String username, String password) throws RemoteException, InvalidLogin, ServerException {
         try {
             Account accountForUsername = accounts.findByUsername(username);
             if (accountForUsername.isAuth(username, password)) {
-                logger.info("LOGIN SUCCESS!"); // DEBUG
-                return 1234; // TODO: SessionID: save new session to file! return a random sessionId
+                logger.info("Login success, accountNum=" + accountForUsername.getAccountNum() + ", name='" + accountForUsername.getAccountName() + "'");
+                return startNewSession(accountForUsername.getAccountNum());
             } else {
                 logger.warning("Invalid login (password '" + password + "' was incorrect for username '" + username + "')" + new Date());
                 throw new InvalidLogin("Username and password was not correct");
@@ -69,41 +52,134 @@ public class Bank implements BankInterface {
         }
     }
 
-    public void deposit(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
+    /**
+     * Begin a new session, generating a session ID, and saving expiration time and account number to a file
+     * @param accountNum Details of account to save
+     * @return Generated session ID
+     * @throws ServerException Generated if server has critical error (from IO)
+     */
+    private long startNewSession(int accountNum) throws ServerException {
+        long sessionID = Math.abs(rnd.nextLong());
+
+        try (FileWriter file = new FileWriter(SESSION_DIRECTORY + File.separator + sessionID + ".session")) {
+            try (PrintWriter writer = new PrintWriter(file)) {
+                // Store account number
+                writer.println(accountNum);
+
+                // Store session expiration in UNIX milliseconds
+                long expirationTime = (new Date()).toInstant().plus(FIVE_MINUTES).toEpochMilli();
+                writer.println(expirationTime);
+            }
+        } catch (IOException e) {
+            logger.severe("Could not create session file for '" + sessionID + "'");
+            throw new ServerException("Could not create new session on server");
+        }
+
+        return sessionID;
+    }
+
+    /**
+     * Validate that this session currently exists, is valid for this time range, and is for this account number
+     * @param sessionID  Session file to locate
+     * @param accountNum Number which should be inside that session file
+     * @throws InvalidSession Error if session does not exist or if account number is not for this session
+     * @throws ServerException Error if server has critical error (from IO)
+     */
+    private void verifySession(long sessionID, int accountNum) throws InvalidSession, ServerException {
+        try (FileReader file = new FileReader(SESSION_DIRECTORY + File.separator + sessionID + ".session")) {
+            int accountNumLine;
+            long expirationTimeLine;
+
+            try (BufferedReader reader = new BufferedReader(file)) {
+                try {
+                    accountNumLine = Integer.parseInt(reader.readLine());
+                    expirationTimeLine = Long.parseLong(reader.readLine());
+                } catch (NumberFormatException e) { // Thrown both if not a valid number or if readLine failed and returned null
+                    logger.severe("Malformed session file: " + sessionID);
+                    throw new InvalidSession("Session invalid");
+                }
+            } catch (IOException e) {
+                logger.severe("Could not read from session file, IO error" + sessionID);
+                throw new ServerException("Could not read session on server");
+            }
+
+            // Validate account number in file
+            if (accountNumLine != accountNum) {
+                logger.warning("User attempted to use session " + sessionID + " (stored account number " + accountNumLine + "), but provided incorrect account number: " + accountNum);
+                invalidateSession(sessionID);
+                throw new InvalidSession("Session ID is not valid for account number");
+            }
+
+            // Validate current time is not after the stored expiration time (in UNIX ms)
+            if ((new Date()).after(new Date(expirationTimeLine))) {
+                logger.warning("User session has expired: " + sessionID);
+                invalidateSession(sessionID);
+                throw new InvalidSession("Session has expired");
+            }
+        } catch (FileNotFoundException e) {
+            logger.severe("Client attempted to utilise an invalid session ID: " + sessionID);
+            throw new InvalidSession("Session ID not found");
+        } catch (IOException e) {
+            logger.severe("Could not open session file, IO error: " + sessionID);
+            throw new ServerException("Could not read session on server");
+        }
+    }
+
+    /**
+     * Remove this session file from disk so it cannot be used again
+     * @param sessionID Session file to find. May or may not exist on disk
+     */
+    private void invalidateSession(long sessionID) {
+        try {
+            Files.deleteIfExists((new File(SESSION_DIRECTORY + File.separator + sessionID + ".session")).toPath());
+            logger.info("Removing session: " + sessionID);
+        } catch (NoSuchFileException e) {
+            logger.warning("Removing session, file has already been removed: " + sessionID);
+        } catch (IOException e) {
+            logger.severe("Cannot remove session, file IO error: " + sessionID);
+        }
+    }
+
+    public void deposit(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount must not be negative");
         }
         Account account = accounts.findByAccountNum(accountNum);
-        // TODO: SessionID: Validate session files, else throw exception
+        verifySession(sessionID, accountNum);
         account.addTransaction(new DepositTransaction(new Date(), amount));
     }
 
-    public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
+    public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount must not be negative");
         }
         Account account = accounts.findByAccountNum(accountNum);
-        // TODO: SessionID: Validate session files, else throw exception
+        verifySession(sessionID, accountNum);
         account.addTransaction(new WithdrawalTransaction(new Date(), amount));
     }
 
-    public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
+    public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
         Account account = accounts.findByAccountNum(accountNum);
-        // TODO: SessionID: Validate session files, else throw exception
+        verifySession(sessionID, accountNum);
         return account.getBalance();
     }
 
-    public Statement getStatement(Date from, Date to, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException {
-        logger.warning("getStatement!");
-        // TODO: implementation code
-        return null;
+    public Statement getStatement(int accountNum, Date from, Date to, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
+        if (to.before(from)) {
+            throw new IllegalArgumentException("From date must be chronologically before To date");
+        }
+
+        verifySession(sessionID, accountNum);
+        Account account = accounts.findByAccountNum(accountNum);
+        return new StatementImpl(account.getAccountNum(), account.getAccountName(), from, to,
+                account.getTransactionRange(from, to));
     }
 
     /**
      * Start the Bank server
      * Much of this code is derived from the Oracle Java RMI Tutorial path
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException {
         // Parse command line arguments
         int port;
         if (args.length >= 1) {
@@ -120,7 +196,7 @@ public class Bank implements BankInterface {
 
         try {
             // Create bank instance (this class)
-            BankInterface bank = new Bank();
+            Bank bank = new Bank();
 
             // Create RMI server as a UnicastRemoteObject
             BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, port);
@@ -128,23 +204,14 @@ public class Bank implements BankInterface {
             // Bind compute engine to name server
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind("Bank", stub);
+
             logger.info("Bank server has been launched and bound to port " + port);
 
-            //DEBUG:
-            try {
-                bank.login("username1", "password1");
-                bank.inquiry(100, 1234);
-                bank.deposit(100, 20, 1234);
-                bank.inquiry(100, 1234);
-                bank.withdraw(100, 100, 1234);
-                bank.inquiry(100, 1234);
-            } catch (InvalidLogin | InvalidSession | AccountNotFoundException e) {
-                logger.log(Level.SEVERE, e.getMessage(), e); // Swallow exception
-            }
+            // Create mock accounts
+            AccountDatastoreImpl.createMockAccounts(bank.accounts); // Note: This is for the simplified application only. A real app would use a database for these
         } catch (RemoteException e) {
-            // Swallow exception
-            logger.severe("Bank Server RemoteException!");
-            e.printStackTrace();
+            logger.severe("Server could not startup due to a remote exception" + e.getMessage());
+            throw e; // This SHOULD crash the server process, so re-throw
         }
     }
 }
