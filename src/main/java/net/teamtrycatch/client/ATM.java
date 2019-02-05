@@ -1,5 +1,11 @@
 package net.teamtrycatch.client;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -8,11 +14,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.management.RuntimeErrorException;
+
 import net.teamtrycatch.server.Bank;
 import net.teamtrycatch.shared.BankInterface;
 import net.teamtrycatch.shared.IllegalArguementException;
 import net.teamtrycatch.shared.InvalidLogin;
 import net.teamtrycatch.shared.InvalidSession;
+import net.teamtrycatch.shared.ServerException;
 import net.teamtrycatch.shared.Statement;
 
 public class ATM {
@@ -28,7 +37,7 @@ public class ATM {
         	super();
         }
 
-        public static void main (String[] args) throws net.teamtrycatch.shared.AccountNotFoundException {
+        public static void main (String[] args) throws net.teamtrycatch.shared.AccountNotFoundException,IOException {
 
         	if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
@@ -53,23 +62,27 @@ public class ATM {
 			switch (process){
             case "login":
                 try {
+                	
                     //Login with username and password
                     customer = bank.login(username, password);
+                    startNewSession(customer);
                     System.out.println("Session active for 5 minutes");
-                    System.out.println("Use SessionID " + customer + " for all other operations");
+                    System.out.println("Use SessionID " + customer + " for all other operations");//TODO Debug ,remove customer
                 //Catch exceptions that can be thrown from the server
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 } catch (InvalidLogin e) {
                     e.printStackTrace();
-                }
+                } catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 break;
 
             case "deposit":
                 try {
                     //Make bank deposit and get updated balance
-                  
-                    bank.deposit(account, amount, sessionID);
+                    bank.deposit(account, amount, getActiveSession());
                     System.out.println("Successfully deposited " + amount + " into account " + account);
                     System.out.println("New balance: " + amount);
                 //Catch exceptions that can be thrown from the server
@@ -77,13 +90,16 @@ public class ATM {
                     e.printStackTrace();
                 } catch (InvalidSession e) {
                     System.out.println(e.getMessage());
-                }
+                } catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 break;
 
             case "withdraw":
                 try {
                     //Make bank withdrawal and get updated balance
-                	bank.withdraw(account, amount, sessionID);
+                	bank.withdraw(account, amount, getActiveSession());
                     System.out.println("Successfully withdrew E" + amount + " from account " + account +
                                        "\nRemaining Balance: E" + amount);
                 //Catch exceptions that can be thrown from the server
@@ -91,40 +107,60 @@ public class ATM {
                     e.printStackTrace();
                 } catch (InvalidSession e) {
                     System.out.println(e.getMessage());
-                } 
+                } catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
 
                 break;
 
             case "inquiry":
                 try {
+                	int balance;
+                	balance = bank.inquiry(account,getActiveSession());
                     //Get account details from bank
-                    bank.inquiry(account,sessionID);
-                    System.out.println("Account:" +account);
+                  
+                    System.out.println("Account:" +account+ "Balance:" +balance);
                          
                 //Catch exceptions that can be thrown from the server
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 } catch (InvalidSession e) {
                     System.out.println(e.getMessage());
-                }
+                } catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 break;
 
-            case "statement":
-                Statement s = null;
-                //Get statement for required dates
-				s.getAccountName();
-
-				//format statement for printing to the window
-				SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-				System.out.println("Statement for Account " + account + " between " +
-				                   dateFormat.format(startDate) + " and " + dateFormat.format(endDate));
+            case "statement": 
                
-				System.out.println("Date\t\t\tTransaction Type\tAmount\t\tBalance");
-               
+				try {
+					Statement s = bank.getStatement(account, startDate, endDate, getActiveSession());
+					s.getAccountName();  
+					
+					//format statement for printing to the window
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+					System.out.println("Statement for Account " + account + " between " +
+					                   dateFormat.format(startDate) + " and " + dateFormat.format(endDate));
+	               
+					System.out.println("Date\t\t\tTransaction Type\tAmount\t\tBalance");
+	               
 
-				for(Object t : s.getTransactions()) {
-				    System.out.println(t);
+					for(Object t : s.getTransactions()) { 
+					    System.out.println(t);
+					}
+				} catch (InvalidSession e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ServerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
+                //Get statement for required dates
+			
+				//call bank to get statement
+				
             
                 break;
 
@@ -133,8 +169,47 @@ public class ATM {
                 break;
         }
     }
-        
-    	
+
+	private static void startNewSession(long sessionID) throws IOException {
+		// long sessionID = Math.abs(rnd.nextLong());
+
+		try (FileWriter file = new FileWriter(".session")) {
+			try (PrintWriter writer = new PrintWriter(file)) {
+
+				writer.println(sessionID);
+
+			}
+		} catch (IOException e) {
+			System.out.println("Could not create session file for '" + sessionID + "'");
+			throw new IOException(e);
+		}
+
+	
+	}
+
+	private static long getActiveSession() throws IOException {
+		try (FileReader file = new FileReader(".session")) {
+			int accountNumLine;
+			long sessionID;
+
+			try (BufferedReader reader = new BufferedReader(file)) {
+
+				sessionID = Long.parseLong(reader.readLine());
+			} catch (NumberFormatException e) { // Thrown both if not a
+												// valid number or if
+												// readLine failed and
+												// returned null
+				System.err.println(".session file broken");
+				throw new IOException(e);
+
+			} catch (IOException e) {
+				System.err.println("Could not read from session file, IO error .session");
+				throw new IOException(e);
+			}
+			return sessionID;
+		}
+
+	}
 
 	public static void getUserArgs(String args[]) throws IllegalArguementException{
 		if(args.length < 2){
@@ -183,14 +258,16 @@ public class ATM {
 				
 			}
 			account = Integer.parseInt(args[3]);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 			try {
-				startDate = DateFormat.getDateInstance().parse(args[4]);
+				
+				startDate = dateFormat.parse(args[4]);
 			} catch (ParseException e) {
 				
 				e.printStackTrace();
 			}
 			try {
-				endDate = DateFormat.getDateInstance().parse(args[5]);
+				endDate = dateFormat.parse(args[5]);
 			} catch (ParseException e) {
 			
 				e.printStackTrace();
