@@ -1,6 +1,9 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.AccountNotFoundException;
+import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
+import net.teamtrycatch.shared.server.DepositTransaction;
+import net.teamtrycatch.shared.server.InitialTransaction;
+import net.teamtrycatch.shared.server.WithdrawalTransaction;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -9,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
 import java.util.logging.Logger;
 
 public class AccountDatastoreImpl implements AccountDatastore {

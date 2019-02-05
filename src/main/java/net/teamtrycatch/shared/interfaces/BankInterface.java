@@ -1,4 +1,4 @@
-package net.teamtrycatch.shared;
+package net.teamtrycatch.shared.interfaces;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
