@@ -110,7 +110,7 @@ public class ATM {
 			throw new IllegalArgumentException("Computer Says no");
 
 		}
-		bank = connection(host);
+		bank = connection(host, port);
 
 		switch (process) {
 		case "login":
@@ -142,10 +142,10 @@ public class ATM {
 		}
 	}
 
-	private static BankInterface connection(String host) throws RemoteException, NotBoundException, AccessException {
+	private static BankInterface connection(String host, int port) throws RemoteException, NotBoundException, AccessException {
 		BankInterface bank;
 		String BI = "Bank";
-		Registry registry = LocateRegistry.getRegistry(host);
+		Registry registry = LocateRegistry.getRegistry(host, port);
 		// Bank stub = (Bank) registry.lookup("Bank");
 		bank = (BankInterface) registry.lookup(BI);
 		return bank;

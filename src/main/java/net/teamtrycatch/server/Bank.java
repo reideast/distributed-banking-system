@@ -197,7 +197,7 @@ public class Bank implements BankInterface {
         if (args.length >= 1) {
             port = Integer.parseInt(args[0]);
         } else {
-            System.out.println("Usage: " + Bank.class.getSimpleName() + " [port number]");
+            System.out.println("Usage: " + Bank.class.getSimpleName() + " [registry port number]");
             return;
         }
 
@@ -211,13 +211,14 @@ public class Bank implements BankInterface {
             Bank bank = new Bank();
 
             // Create RMI server as a UnicastRemoteObject
-            BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, port);
+            int serverPort = (new Random()).nextInt(10000) + 50000; // Ephemeral port range
+            BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, serverPort);
 
             // Bind compute engine to name server
-            Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.getRegistry(port);
             registry.rebind("Bank", stub);
 
-            logger.info("Bank server has been launched and bound to port " + port);
+            logger.info("Bank server has been launched");
 
             // Create mock accounts
             AccountDatastoreImpl.createMockAccounts(bank.accounts); // Note: This is for the simplified application only. A real app would use a database for these
