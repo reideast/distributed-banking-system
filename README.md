@@ -32,7 +32,10 @@ Whenever any changes to the client or server are made, the Maven package command
 
 1. Start ATM client
    * `./run-client.ps1`
-   * This batch file has no additional arguments to actually do any ATM operations. They could be added at the end of the line to test various operations
+   * This batch file needs additional arguments to actually do any ATM operations. Add them as arguments when you run the script, such as:
+     * `.\run-client.ps1 login user pass`
+     * `.\run-client.ps1 inquiry 100`
+     * ...and so on
    * The client will run once and then quit.
 
 ### Linux/MacOS
