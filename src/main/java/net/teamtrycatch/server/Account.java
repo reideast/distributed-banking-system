@@ -1,6 +1,6 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.Transaction;
+import net.teamtrycatch.shared.interfaces.Transaction;
 
 import java.util.Date;
 import java.util.List;

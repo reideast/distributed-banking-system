@@ -1,4 +1,4 @@
-package net.teamtrycatch.shared;
+package net.teamtrycatch.shared.interfaces;
 
 import java.io.Serializable;
 import java.util.Date;

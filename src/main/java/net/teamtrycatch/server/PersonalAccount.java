@@ -1,6 +1,9 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.Transaction;
+import net.teamtrycatch.shared.interfaces.Transaction;
+import net.teamtrycatch.shared.server.DepositTransaction;
+import net.teamtrycatch.shared.server.InitialTransaction;
+import net.teamtrycatch.shared.server.WithdrawalTransaction;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
