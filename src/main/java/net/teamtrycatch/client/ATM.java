@@ -1,5 +1,13 @@
 package net.teamtrycatch.client;
 
+import net.teamtrycatch.shared.client.IllegalArgumentException;
+import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
+import net.teamtrycatch.shared.interfaces.BankInterface;
+import net.teamtrycatch.shared.interfaces.InvalidLogin;
+import net.teamtrycatch.shared.interfaces.InvalidSession;
+import net.teamtrycatch.shared.interfaces.ServerException;
+import net.teamtrycatch.shared.interfaces.Statement;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,14 +21,6 @@ import java.rmi.registry.Registry;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import net.teamtrycatch.shared.client.IllegalArgumentException;
-import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
-import net.teamtrycatch.shared.interfaces.BankInterface;
-import net.teamtrycatch.shared.interfaces.InvalidLogin;
-import net.teamtrycatch.shared.interfaces.InvalidSession;
-import net.teamtrycatch.shared.interfaces.ServerException;
-import net.teamtrycatch.shared.interfaces.Statement;
 
 public class ATM {
 
