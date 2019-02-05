@@ -1,6 +1,6 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.Transaction;
+import net.teamtrycatch.shared.interfaces.Transaction;
 
 import java.util.Date;
 import java.util.List;
@@ -27,7 +27,7 @@ public interface Account {
      * Get all transactions
      * @return All transactions for this account
      */
-    public List getAllTransactions();
+    public List<Transaction> getAllTransactions();
 
     /**
      * Get only those transactions within a date range
@@ -35,7 +35,7 @@ public interface Account {
      * @param endDate End of date range, inclusive
      * @return All transactions for this account within the date range
      */
-    public List getTransactionRange(Date beginDate, Date endDate);
+    public List<Transaction> getTransactionRange(Date beginDate, Date endDate);
 
     /**
      * Determine if this account can be authorised with a username/password combo

@@ -1,4 +1,4 @@
-package net.teamtrycatch.shared;
+package net.teamtrycatch.shared.interfaces;
 
 public class InvalidLogin extends Exception {
     public InvalidLogin(String message) {

@@ -15,7 +15,7 @@ Run Maven phase package:
 
 `mvn package`
 
-Whenever any changes to the client or server are made, the Maven package command will rebuild those JARs, which the below scripts will utilise to run.
+Whenever any changes to the client or server are made, the Maven package command will compile, run tests, and then rebuild those JARs, which the below scripts will utilise to run.
 
 ## How to Run
 
@@ -32,17 +32,26 @@ Whenever any changes to the client or server are made, the Maven package command
 
 1. Start ATM client
    * `./run-client.ps1`
-   * This batch file has no additional arguments to actually do any ATM operations. They could be added at the end of the line
+   * This batch file needs additional arguments to actually do any ATM operations. Add them as arguments when you run the script, such as:
+     * `.\run-client.ps1 login user pass`
+     * `.\run-client.ps1 inquiry 100`
+     * ...and so on
    * The client will run once and then quit.
 
 ### Linux/MacOS
 
-TODO
+Bash scripts (`*.sh`) with the same functionality as above have been created. However these have only been tested in the Cygwin bash shell (Win-64)
 
-### Developer Workflow Summary
+### Test Script
+
+There exists a `test-script` file (both Windows and Linux), which will start the registry, server, and then run a series of client ATM operations,
+which we believe cover most normal operations and edge cases
+
+## Developer Workflow Summary
 
 1. Modify code
 1. `mvn package`
 1. [Optional] If "shared" classes were modified: `./run-registry`
 1. [Optional] If "server" classes were modified: `./run-server`
 1. `./run-client`
+

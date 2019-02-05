@@ -1,6 +1,6 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.AccountNotFoundException;
+import net.teamtrycatch.shared.interfaces.AccountNotFoundException;
 
 public interface AccountDatastore {
     /**

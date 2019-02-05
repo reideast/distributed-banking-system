@@ -1,7 +1,7 @@
-package net.teamtrycatch.server;
+package net.teamtrycatch.shared.server;
 
-import net.teamtrycatch.shared.Statement;
-import net.teamtrycatch.shared.Transaction;
+import net.teamtrycatch.shared.interfaces.Statement;
+import net.teamtrycatch.shared.interfaces.Transaction;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +13,19 @@ public class StatementImpl implements Statement {
     private Date endDate;
     private String accountName;
     private ArrayList<Transaction> transactions;
+
+    public StatementImpl(int accountNum, String accountName, Date startDate, Date endDate) {
+        this.accountNum = accountNum;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.accountName = accountName;
+        this.transactions = new ArrayList<>();
+    }
+
+    public StatementImpl(int accountNum, String accountName, Date startDate, Date endDate, List<Transaction> transactions) {
+        this(accountNum, accountName, startDate, endDate);
+        this.transactions.addAll(transactions);
+    }
 
     @Override
     public int getAccountNum() {
@@ -55,7 +68,7 @@ public class StatementImpl implements Statement {
         return transactions;
     }
 
-    public void setTransactions(ArrayList<Transaction> transactions) {
-        this.transactions = transactions;
+    public void addTransaction(Transaction t) {
+        this.transactions.add(t);
     }
 }
