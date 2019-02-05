@@ -155,6 +155,7 @@ public class Bank implements BankInterface {
         Account account = accounts.findByAccountNum(accountNum);
         verifySession(sessionID, accountNum);
         account.addTransaction(new DepositTransaction(new Date(), amount));
+        logger.info("Deposit completed, account " + accountNum + " amount " + amount);
     }
 
     public void withdraw(int accountNum, int amount, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
@@ -164,11 +165,13 @@ public class Bank implements BankInterface {
         Account account = accounts.findByAccountNum(accountNum);
         verifySession(sessionID, accountNum);
         account.addTransaction(new WithdrawalTransaction(new Date(), amount));
+        logger.info("Withdrawal completed, account " + accountNum + " amount " + amount);
     }
 
     public int inquiry(int accountNum, long sessionID) throws RemoteException, InvalidSession, AccountNotFoundException, ServerException {
         Account account = accounts.findByAccountNum(accountNum);
         verifySession(sessionID, accountNum);
+        logger.info("Account balance inquiry completed, account " + accountNum);
         return account.getBalance();
     }
 
@@ -179,6 +182,7 @@ public class Bank implements BankInterface {
 
         verifySession(sessionID, accountNum);
         Account account = accounts.findByAccountNum(accountNum);
+        logger.info("Preparing statement for account " + accountNum);
         return new StatementImpl(account.getAccountNum(), account.getAccountName(), from, to,
                 account.getTransactionRange(from, to));
     }
@@ -193,7 +197,7 @@ public class Bank implements BankInterface {
         if (args.length >= 1) {
             port = Integer.parseInt(args[0]);
         } else {
-            System.out.println("Usage: " + Bank.class.getSimpleName() + " [port number]");
+            System.out.println("Usage: " + Bank.class.getSimpleName() + " [registry port number]");
             return;
         }
 
@@ -207,13 +211,14 @@ public class Bank implements BankInterface {
             Bank bank = new Bank();
 
             // Create RMI server as a UnicastRemoteObject
-            BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, port);
+            int serverPort = (new Random()).nextInt(10000) + 50000; // Ephemeral port range
+            BankInterface stub = (BankInterface) UnicastRemoteObject.exportObject(bank, serverPort);
 
             // Bind compute engine to name server
-            Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.getRegistry(port);
             registry.rebind("Bank", stub);
 
-            logger.info("Bank server has been launched and bound to port " + port);
+            logger.info("Bank server has been launched");
 
             // Create mock accounts
             AccountDatastoreImpl.createMockAccounts(bank.accounts); // Note: This is for the simplified application only. A real app would use a database for these
