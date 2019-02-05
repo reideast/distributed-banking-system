@@ -3,22 +3,21 @@ package net.teamtrycatch.client;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Scanner;
 
-import javax.security.auth.login.AccountNotFoundException;
-
-import net.teamtrycatch.server.Account;
 import net.teamtrycatch.server.Bank;
 import net.teamtrycatch.shared.BankInterface;
+import net.teamtrycatch.shared.IllegalArguementException;
 import net.teamtrycatch.shared.InvalidLogin;
 import net.teamtrycatch.shared.InvalidSession;
 import net.teamtrycatch.shared.Statement;
 
 public class ATM {
-	static int  account,amount;
-    static String process, username, password;
+	static int  account,amount,port;
+    static String process, username, password,host;
 	static long customer;
     static long sessionID;
     static BankInterface bank;
@@ -35,36 +34,22 @@ public class ATM {
                 System.setSecurityManager(new SecurityManager());
             }
 
-            String host = (args.length < 1) ? null : args[0];
+            //String host = (args.length < 1) ? null : args[0];
             try {
+            	getUserArgs(args);
+            	String BI = "Bank";
                 Registry registry = LocateRegistry.getRegistry(host);
-               // Bank stub = (Bank) registry.lookup("Bank");
-                BankInterface Bi = (BankInterface) registry.lookup("Bank");
-                getUserArgs(args);
-               
-                //This section takes in user input from command line
-               /* System.out.println(args[0]);
-                System.out.println(args[1]);
-                Scanner sc = new Scanner(System.in);
-                System.out.println("Enter UserName");
-                String userName = sc.nextLine();
-                System.out.println("Enter PassWord");
-                String pass = sc.nextLine();
-                num=Bi.login(userName, pass);
-                if(num == 1234){
-                	System.out.println("Success");
-                }*/
+                //Bank stub = (Bank) registry.lookup("Bank");
+                bank = (BankInterface) registry.lookup(BI);
                 
-                // if success
-                //switch statement to withdraw
+               
+             
              
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();
             }
             
-  
-
 			switch (process){
             case "login":
                 try {
@@ -144,40 +129,80 @@ public class ATM {
                 break;
 
             default:
+            	System.out.println("Sorry can't do that for you!");
                 break;
         }
     }
         
     	
-	@SuppressWarnings("deprecation")
-	public static void getUserArgs(String args[]) throws AccountNotFoundException{
-		if(args.length < 4){
-			throw new AccountNotFoundException();
-		}
 
-		process = args[2];
+	public static void getUserArgs(String args[]) throws IllegalArguementException{
+		if(args.length < 2){
+			throw new IllegalArguementException("You must enter a hosting port");
+			
+		}
+		if(args.length < 3){
+			throw new IllegalArguementException("You must enter a process to continue Login,Withdraw,Deposit,Inquiry,Statement");
+			
+		}
+		host = args[0];
+		port = Integer.parseInt(args[1]);
+        process= args[2];
+       
 		switch (process) {
+		
 		case "login":
+			if(args.length < 5){
+				throw new IllegalArguementException("Please enter user name and password");
+				
+			}
 			username = args[3];
 			password = args[4];
 			break;
 		case "withdraw":
 		case "deposit":
+			if(args.length < 5){
+				throw new IllegalArguementException("Please enter amount and account");
+				
+			}
 			amount = (int) Double.parseDouble(args[4]);
 			account = Integer.parseInt(args[3]);
-			sessionID = Long.parseLong(args[5]);
+			//sessionID = Long.parseLong(args[5]);
 			break;
 		case "inquiry":
+			if(args.length < 4){
+				throw new IllegalArguementException("Please enter account number");
+				
+			}
 			account = Integer.parseInt(args[3]);
-			sessionID = Long.parseLong(args[4]);
+			//sessionID = Long.parseLong(args[4]);
 			break;
 		case "statement":
+			if(args.length < 6){
+				throw new IllegalArguementException("Please enter account number and start and end date");
+				
+			}
 			account = Integer.parseInt(args[3]);
-			startDate = new Date(args[4]);
-			endDate = new Date(args[5]);
-			sessionID = Long.parseLong(args[6]);
+			try {
+				startDate = DateFormat.getDateInstance().parse(args[4]);
+			} catch (ParseException e) {
+				
+				e.printStackTrace();
+			}
+			try {
+				endDate = DateFormat.getDateInstance().parse(args[5]);
+			} catch (ParseException e) {
+			
+				e.printStackTrace();
+			}
+			//sessionID = Long.parseLong(args[6]);
 			break;
+			default:
+				throw new IllegalArguementException("Computer Says no");
+				
 		}
 
 	}
+
+
 }
