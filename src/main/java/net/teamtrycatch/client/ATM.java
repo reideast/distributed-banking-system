@@ -32,8 +32,6 @@ public class ATM {
 			IllegalArgumentException, NotBoundException {
 		int account = 0, amount = 0, port;
 		String process, username = null, password = null, host;
-		long customer;
-		long sessionID;
 		BankInterface bank;
 		Date startDate = null, endDate = null;
 
@@ -41,15 +39,14 @@ public class ATM {
 			System.setSecurityManager(new SecurityManager());
 		}
 
-		// String host = (args.length < 1) ? null : args[0];
-
 		if (args.length < 2) {
 			throw new IllegalArgumentException("You must enter a hosting port");
 
 		}
 		if (args.length < 3) {
 			throw new IllegalArgumentException(
-					"You must enter a process to continue Login,Withdraw,Deposit,Inquiry,Statement");
+					"You must enter a process to continue\n Login\n Withdraw\n Deposit\n Inquiry\n Statement\n"
+					+ "eg: run-client.ps1 login userName pass deposit account# and amount");
 
 		}
 		host = args[0];
@@ -74,7 +71,7 @@ public class ATM {
 			}
 			amount = (int) Double.parseDouble(args[4]);
 			account = Integer.parseInt(args[3]);
-			// sessionID = Long.parseLong(args[5]);
+			
 			break;
 		case "inquiry":
 			if (args.length < 4) {
@@ -82,7 +79,7 @@ public class ATM {
 
 			}
 			account = Integer.parseInt(args[3]);
-			// sessionID = Long.parseLong(args[4]);
+		
 			break;
 		case "statement":
 			if (args.length < 6) {
@@ -104,7 +101,7 @@ public class ATM {
 
 				e.printStackTrace();
 			}
-			// sessionID = Long.parseLong(args[6]);
+			
 			break;
 		default:
 			throw new IllegalArgumentException("Computer Says no");
@@ -146,7 +143,6 @@ public class ATM {
 		BankInterface bank;
 		String BI = "Bank";
 		Registry registry = LocateRegistry.getRegistry(host, port);
-		// Bank stub = (Bank) registry.lookup("Bank");
 		bank = (BankInterface) registry.lookup(BI);
 		return bank;
 	}
@@ -168,10 +164,9 @@ public class ATM {
 				System.out.println(t);
 			}
 		} catch (InvalidSession e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Invalid Session");
 		} catch (ServerException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Server Connection Failed");
 			e.printStackTrace();
 		}
 		// Get statement for required dates
@@ -188,12 +183,11 @@ public class ATM {
 			System.out.println("New balance: " + amount);
 			// Catch exceptions that can be thrown from the server
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("RMI ERROR");
 		} catch (InvalidSession e) {
 			System.out.println(e.getMessage());
 		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Server Connection Failed");
 		}
 	}
 
@@ -206,12 +200,11 @@ public class ATM {
 					+ "\nRemaining Balance: E" + amount);
 			// Catch exceptions that can be thrown from the server
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("RMI ERROR");
 		} catch (InvalidSession e) {
-			System.out.println(e.getMessage());
+			System.err.println("Invalid Session");
 		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Server Connection Failed");
 		}
 	}
 
@@ -225,12 +218,11 @@ public class ATM {
 
 			// Catch exceptions that can be thrown from the server
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("RMI ERROR");
 		} catch (InvalidSession e) {
-			System.out.println(e.getMessage());
+			System.err.println("Invalid Session");
 		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Server Connection Failed");
 		}
 	}
 
@@ -242,18 +234,14 @@ public class ATM {
 			customer = bank.login(username, password);
 			startNewSession(customer);
 			System.out.println("Session active for 5 minutes");
-			System.out.println("Use SessionID " + customer + " for all other operations");// TODO
-																							// Debug
-																							// ,remove
-																							// customer
+			
 			// Catch exceptions that can be thrown from the server
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("RMI ERROR");
 		} catch (InvalidLogin e) {
-			e.printStackTrace();
+			System.err.println("Wrong login credentials please try again");
 		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Server Connection Failed");
 		}
 	}
 
@@ -275,7 +263,6 @@ public class ATM {
 
 	private static long getActiveSession() throws IOException {
 		try (FileReader file = new FileReader(".session")) {
-			int accountNumLine;
 			long sessionID;
 
 			try (BufferedReader reader = new BufferedReader(file)) {
