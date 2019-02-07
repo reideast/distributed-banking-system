@@ -1,11 +1,11 @@
 package net.teamtrycatch.server;
 
-import net.teamtrycatch.shared.Statement;
-import net.teamtrycatch.shared.Transaction;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import net.teamtrycatch.shared.Statement;
+import net.teamtrycatch.shared.Transaction;
 
 public class StatementImpl implements Statement {
     private int accountNum;

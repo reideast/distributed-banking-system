@@ -211,12 +211,12 @@ public class ATM {
 					+ "\nRemaining Balance: E" + amount);
 			// Catch exceptions that can be thrown from the server
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("RMI ERROR");
 		} catch (InvalidSession e) {
-			System.out.println(e.getMessage());
+			System.err.println("Invalid Session");
 		} catch (ServerException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e.printStackTrace();//server failed
 		}
 	}
 
