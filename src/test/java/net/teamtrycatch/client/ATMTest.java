@@ -1,7 +1,7 @@
 package net.teamtrycatch.client;
 
 import net.teamtrycatch.server.Bank;
-import org.junit.After;
+import net.teamtrycatch.shared.interfaces.InvalidLogin;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +20,7 @@ import java.util.Random;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -44,25 +45,7 @@ public class ATMTest {
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(mockRegistry);
     }
 
-    // Testing System.out method is from: https://stackoverflow.com/a/1119559
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-    private final PrintStream originalOut = System.out;
-    private final PrintStream originalErr = System.err;
-
-    @Before
-    public void setUpStreams() {
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
-    }
-
-    @After
-    public void restoreStreams() {
-        System.setOut(originalOut);
-        System.setErr(originalErr);
-    }
-
-    void callClient(String... args) throws Exception {
+    private void callClient(String... args) throws Exception {
         String[] argsPlusHost = new String[args.length + 2];
         argsPlusHost[0] = host;
         argsPlusHost[1] = "" + port;
@@ -89,18 +72,49 @@ public class ATMTest {
 
     @Test
     public void operationsUseSessionFromFile() throws Exception {
+        interceptSystemOut();
+
         final long sessionId = Math.abs(new Random().nextLong());
-        final String username = "user123";
-        final String password = "pass123";
+        final String username = "user456";
+        final String password = "pass456";
         final int accountNum = 100;
 
         when(mockBank.login(username, password)).thenReturn(sessionId);
-        when(mockBank.inquiry(accountNum, sessionId)).thenReturn(12345); // If ATM isn't reading sessionId from file, then this version of the mock will not be called
+        when(mockBank.inquiry(accountNum, sessionId)).thenReturn(12345); // If ATM isn't truly reading sessionId from file, then this version of the mock will not be called
 
         callClient("login", username, password);
         callClient("inquiry", ""+accountNum);
 
         assertThat(outContent.toString(), containsString("12345"));
 
+        restoreSystemOut();
+    }
+
+    // Method to compare System.out is from: https://stackoverflow.com/a/1119559
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+    public void interceptSystemOut () {
+        System.setOut(new PrintStream(outContent));
+    }
+    public void restoreSystemOut () {
+        System.setOut(originalOut);
+    }
+
+    @Test
+    public void invalidLoginThrows() throws Exception {
+        when(mockBank.login(anyString(), anyString())).thenThrow(new InvalidLogin("Bad login"));
+        try {
+            callClient("login", "user", "pass");
+        } catch (InvalidLogin e) {
+            fail("Bad login should be caught, and a message displayed");
+        }
+    }
+
+    @Test
+    public void unknownOperationThrows() throws Exception {
+        try {
+            callClient("this-is-not-an-operation");
+            fail("Operation should have been called as invalid");
+        } catch (IllegalArgumentException ignored) {}
     }
 }
