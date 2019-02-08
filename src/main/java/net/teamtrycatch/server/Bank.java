@@ -42,7 +42,6 @@ public class Bank implements BankInterface {
         accounts = new AccountDatastoreImpl();
     }
 
-    // TODO: What do I do with the "throws RemoteException". Nothing I'm doing will throw that...
     public long login(String username, String password) throws RemoteException, InvalidLogin, ServerException {
         try {
             Account accountForUsername = accounts.findByUsername(username);
