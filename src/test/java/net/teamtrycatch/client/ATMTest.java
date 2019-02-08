@@ -1,6 +1,7 @@
 package net.teamtrycatch.client;
 
 import net.teamtrycatch.server.Bank;
+import net.teamtrycatch.shared.client.IllegalArgumentException;
 import net.teamtrycatch.shared.interfaces.InvalidLogin;
 import org.junit.Before;
 import org.junit.Test;
