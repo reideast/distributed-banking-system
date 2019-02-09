@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-rmiregistry.exe -J-Djava.class.path=./target/interfaces.jar &
+rmiregistry.exe 7777 -J-Djava.class.path=./target/interfaces.jar &
 echo RMI Registry has been started
 java -cp "target/server.jar:target/interfaces.jar:target/shared-from-server.jar" -Djava.rmi.server.codebase=file:target/shared-from-server.jar -Djava.security.policy=./target/classes/server.policy net.teamtrycatch.server.Bank 7777 &
 echo Bank server has been started
@@ -52,7 +52,5 @@ client login username2 password2
 client inquiry 200
 echo Sleeping for $((60 * 5 + 10)) seconds
 sleep $((60 * 5 + 10))
-#echo Sleeping for 5 seconds
-#sleep 5
 client inquiry 200  # Session expired error
 

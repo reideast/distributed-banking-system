@@ -43,7 +43,5 @@ client login username2 password2
 client inquiry 200
 Write-Host "Sleeping for" (60 * 5 + 10) "seconds"
 Start-Sleep -Seconds (60 * 5 + 10)
-#Write-Host "Sleeping for" (5) "seconds"
-#Start-Sleep -Seconds (5)
 client inquiry 200  # Session expired error
 
